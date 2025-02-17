@@ -226,10 +226,10 @@ function App() {
           </Box>
         )}
         {todos.length != 0 &&
-          todos.map((todo) => {
+          todos.map((todo, index) => {
             return (
               <List
-                key={todo._id}
+                key={index}
                 dense
                 sx={{
                   width: "100%",
