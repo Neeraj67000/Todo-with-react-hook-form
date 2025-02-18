@@ -15,7 +15,10 @@ import { ToastContainer, toast } from "react-toastify";
 import EditIcon from "@mui/icons-material/Edit";
 
 function App() {
-  const [form, setform] = useState({ task: "", isCompleted: false });
+  const [form, setform] = useState({
+    task: "",
+    isCompleted: false,
+  });
   const [todos, settodos] = useState([]);
 
   useEffect(() => {
@@ -47,7 +50,7 @@ function App() {
   }
   async function handleKeyDown(event) {
     if (event.key === "Enter") {
-      const newtodo = { ...form, myid: uuidv4() };
+      const newtodo = { ...form, id: uuidv4() };
       if (newtodo.task) {
         const updatedtodos = [...todos, newtodo];
         settodos(updatedtodos);
@@ -60,6 +63,7 @@ function App() {
           body: JSON.stringify({
             task: form.task,
             isCompleted: form.isCompleted,
+            id: updatedtodos[updatedtodos.length - 1].id,
           }),
           headers: {
             "Content-type": "application/json; charset=UTF-8",
@@ -73,8 +77,7 @@ function App() {
   }
 
   async function saveTodo() {
-    const newtodo = { ...form, isCompleted: false };
-    console.log(newtodo);
+    const newtodo = { ...form, isCompleted: false, id: uuidv4() };
     if (!newtodo.task) {
       showToast("warn", "Please add some value");
       return;
@@ -85,26 +88,39 @@ function App() {
       ...form,
       task: "",
     });
+    console.log(updatedtodos);
+
     const newData = await fetch("http://localhost:3000/", {
       method: "POST",
-      body: JSON.stringify({ task: form.task, isCompleted: form.isCompleted }),
+      body: JSON.stringify({
+        task: form.task,
+        isCompleted: form.isCompleted,
+        id: updatedtodos[updatedtodos.length - 1].id,
+      }),
       headers: {
         "Content-type": "application/json; charset=UTF-8",
       },
     });
     showToast("info", "Your todo is saved");
+    console.log(updatedtodos);
   }
 
-  async function deleteTodo(_id) {
-    const deletedarray = todos.filter((todo) => todo._id !== _id);
+  async function deleteTodo(id) {
+    console.log(form);
+    console.log(id);
+    console.log(todos);
+
+    const deletedarray = todos.filter((todo) => todo.id !== id);
     settodos(deletedarray);
-    const newDeletedArray = todos.filter((todo) => todo._id === _id);
+    console.log(deletedarray);
+
+    const newDeletedArray = todos.filter((todo) => todo.id === id);
     console.log(newDeletedArray[0]);
 
     showToast("error", "Todo is deleted");
     const newData = await fetch("http://localhost:3000/", {
       method: "DELETE",
-      body: JSON.stringify({ id: newDeletedArray[0]._id }),
+      body: JSON.stringify({ id: newDeletedArray[0].id }),
       headers: {
         "Content-type": "application/json; charset=UTF-8",
       },
@@ -117,7 +133,7 @@ function App() {
     console.log(completeid);
 
     const donetodo = todos.map((todo) => {
-      if (todo._id === completeid) {
+      if (todo.id === completeid) {
         if (todo.isCompleted === false) {
           todo.isCompleted = true;
           console.log(todo);
@@ -136,7 +152,7 @@ function App() {
       return todo;
     });
     settodos(donetodo);
-    const newDeletedArray = donetodo.filter((todo) => todo._id === completeid);
+    const newDeletedArray = donetodo.filter((todo) => todo.id === completeid);
     console.log(newDeletedArray[0]);
     const markDonetodo = await fetch("http://localhost:3000/", {
       method: "PUT",
@@ -152,9 +168,9 @@ function App() {
   }
 
   async function handleEdit(myid) {
-    let editArray = todos.filter((todo) => todo._id === myid)[0];
+    let editArray = todos.filter((todo) => todo.id === myid)[0];
     setform({ ...form, task: editArray.task });
-    const deletedarray = todos.filter((todo) => todo._id !== myid);
+    const deletedarray = todos.filter((todo) => todo.id !== myid);
     settodos(deletedarray);
     const editedArray = await fetch("http://localhost:3000/", {
       method: "DELETE",
@@ -243,20 +259,20 @@ function App() {
                       <IconButton aria-label="delete" size="large">
                         <EditIcon
                           fontSize="inherit"
-                          onClick={() => handleEdit(todo._id)}
+                          onClick={() => handleEdit(todo.id)}
                         />
                       </IconButton>
 
                       <Checkbox
                         edge="end"
-                        onChange={() => markAsDone(todo._id, todo.isCompleted)}
+                        onChange={() => markAsDone(todo.id, todo.isCompleted)}
                         checked={todo.isCompleted ? "checked" : ""}
                         inputProps=""
                       />
                       <IconButton aria-label="delete" size="large">
                         <DeleteIcon
                           fontSize="inherit"
-                          onClick={() => deleteTodo(todo._id)}
+                          onClick={() => deleteTodo(todo.id)}
                         />
                       </IconButton>
                     </>

@@ -1,5 +1,5 @@
 import express from "express";
-import { MongoClient, ObjectId } from 'mongodb'
+import { MongoClient } from 'mongodb'
 import 'dotenv/config'
 import cors from "cors";
 
@@ -24,20 +24,22 @@ app.get('/', async (req, res) => {
 })
 app.post('/', async (req, res) => {
     res.json(req.body)
+    console.log(req.body);
+
     const insertResult = await collection.insertOne(req.body);
 
 })
 app.delete('/', async (req, res) => {
-    console.log(req.body.id);
+    console.log(req.body);
 
     res.status(200).json({ message: `Resource with ID ${req.body.id} deleted successfully` });
-    const deleteResult = await collection.deleteOne({ _id: new ObjectId(req.body.id) });
+    const deleteResult = await collection.deleteOne({ id: req.body.id });
     console.log('Deleted documents =>', deleteResult);
 
 })
 app.put('/', async (req, res) => {
     console.log(req.body);
-    const updateResult = await collection.updateOne({ _id: new ObjectId(req.body.id) }, { $set: { isCompleted: req.body.isCompleted } });
+    const updateResult = await collection.updateOne({ id: req.body.id }, { $set: { isCompleted: req.body.isCompleted } });
     console.log('Updated documents =>', updateResult);
 })
 
