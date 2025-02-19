@@ -129,10 +129,8 @@ function App() {
   async function deleteTodo(id) {
     const deletedarray = todos.filter((todo) => todo.id !== id);
     settodos(deletedarray);
-    console.log(deletedarray);
 
     const newDeletedArray = todos.filter((todo) => todo.id === id);
-    console.log(newDeletedArray[0]);
 
     showToast("error", "Todo is deleted");
     const newData = await fetch("http://localhost:3000/", {
@@ -143,25 +141,14 @@ function App() {
       },
     });
     const addData = await newData.json();
-    console.log(addData);
   }
   async function markAsDone(completeid) {
-    console.log(todos);
-    console.log(completeid);
-
     const donetodo = todos.map((todo) => {
       if (todo.id === completeid) {
         if (todo.isCompleted === false) {
           todo.isCompleted = true;
-          console.log(todo);
-
-          console.log("todo is false");
-
           showToast("success", "Well Done");
         } else {
-          console.log("todo is true");
-          console.log(todo);
-
           todo.isCompleted = false;
           showToast("warn", "Something Left");
         }
@@ -170,7 +157,6 @@ function App() {
     });
     settodos(donetodo);
     const newDeletedArray = donetodo.filter((todo) => todo.id === completeid);
-    console.log(newDeletedArray[0]);
     const markDonetodo = await fetch("http://localhost:3000/", {
       method: "PUT",
       body: JSON.stringify({
@@ -181,24 +167,11 @@ function App() {
         "Content-type": "application/json; charset=UTF-8",
       },
     });
-    console.log(markDonetodo);
   }
 
   async function handleEdit(myid) {
     let editArray = todos.filter((todo) => todo.id === myid)[0];
-    console.log(editArray);
-
     setform({ ...form, task: editArray.task, id: editArray.id });
-
-    // const deletedarray = todos.filter((todo) => todo.id !== myid);
-    // settodos(deletedarray);
-    // const editedArray = await fetch("http://localhost:3000/", {
-    //   method: "DELETE",
-    //   body: JSON.stringify({ id: myid }),
-    //   headers: {
-    //     "Content-type": "application/json; charset=UTF-8",
-    //   },
-    // });
   }
 
   return (
