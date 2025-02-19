@@ -50,15 +50,27 @@ function App() {
   }
   async function handleKeyDown(event) {
     if (event.key === "Enter") {
+      const editedTodo = todos.filter((todo) => {
+        return todo.id !== form.id;
+      });
       const newtodo = { ...form, id: uuidv4() };
       if (newtodo.task) {
-        const updatedtodos = [...todos, newtodo];
+        const updatedtodos = [...editedTodo, newtodo];
         settodos(updatedtodos);
         setform({
           ...form,
           task: "",
         });
-        const newData = await fetch("http://localhost:3000/", {
+        await fetch("http://localhost:3000/", {
+          method: "DELETE",
+          body: JSON.stringify({
+            id: form.id,
+          }),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        });
+        await fetch("http://localhost:3000/", {
           method: "POST",
           body: JSON.stringify({
             task: form.task,
@@ -77,20 +89,30 @@ function App() {
   }
 
   async function saveTodo() {
+    const editedArray = todos.filter((todo) => {
+      return todo.id !== form.id;
+    });
+
+    await fetch("http://localhost:3000/", {
+      method: "DELETE",
+      body: JSON.stringify({ id: form.id }),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    });
     const newtodo = { ...form, isCompleted: false, id: uuidv4() };
     if (!newtodo.task) {
       showToast("warn", "Please add some value");
       return;
     }
-    const updatedtodos = [...todos, newtodo];
+    const updatedtodos = [...editedArray, newtodo];
     settodos(updatedtodos);
     setform({
       ...form,
       task: "",
     });
-    console.log(updatedtodos);
 
-    const newData = await fetch("http://localhost:3000/", {
+    await fetch("http://localhost:3000/", {
       method: "POST",
       body: JSON.stringify({
         task: form.task,
@@ -102,14 +124,9 @@ function App() {
       },
     });
     showToast("info", "Your todo is saved");
-    console.log(updatedtodos);
   }
 
   async function deleteTodo(id) {
-    console.log(form);
-    console.log(id);
-    console.log(todos);
-
     const deletedarray = todos.filter((todo) => todo.id !== id);
     settodos(deletedarray);
     console.log(deletedarray);
@@ -169,17 +186,21 @@ function App() {
 
   async function handleEdit(myid) {
     let editArray = todos.filter((todo) => todo.id === myid)[0];
-    setform({ ...form, task: editArray.task });
-    const deletedarray = todos.filter((todo) => todo.id !== myid);
-    settodos(deletedarray);
-    const editedArray = await fetch("http://localhost:3000/", {
-      method: "DELETE",
-      body: JSON.stringify({ id: myid }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
+    console.log(editArray);
+
+    setform({ ...form, task: editArray.task, id: editArray.id });
+
+    // const deletedarray = todos.filter((todo) => todo.id !== myid);
+    // settodos(deletedarray);
+    // const editedArray = await fetch("http://localhost:3000/", {
+    //   method: "DELETE",
+    //   body: JSON.stringify({ id: myid }),
+    //   headers: {
+    //     "Content-type": "application/json; charset=UTF-8",
+    //   },
+    // });
   }
+
   return (
     <>
       <ToastContainer
@@ -242,10 +263,10 @@ function App() {
           </Box>
         )}
         {todos.length != 0 &&
-          todos.map((todo, index) => {
+          todos.map((todo) => {
             return (
               <List
-                key={index}
+                key={todo.id}
                 dense
                 sx={{
                   width: "100%",
