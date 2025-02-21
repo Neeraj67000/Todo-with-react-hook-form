@@ -14,7 +14,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { ToastContainer, toast } from "react-toastify";
 import EditIcon from "@mui/icons-material/Edit";
 
-function App() {
+function App() {  
   const [form, setform] = useState({
     task: "",
     isCompleted: false,
@@ -23,11 +23,12 @@ function App() {
 
   useEffect(() => {
     async function fetchtTodos() {
-      const persistantTodos = await fetch("http://localhost:3000/");
+      const persistantTodos = await fetch(import.meta.env.VITE_SERVER_URI);
       const newpersistantTodos = await persistantTodos.json();
       settodos(newpersistantTodos);
     }
     fetchtTodos();
+    console.log(import.meta.env.VITE_SERVER_URI);
   }, []);
 
   function handleForm(event) {
@@ -61,7 +62,7 @@ function App() {
           ...form,
           task: "",
         });
-        await fetch("http://localhost:3000/", {
+        await fetch(import.meta.env.VITE_SERVER_URI, {
           method: "DELETE",
           body: JSON.stringify({
             id: form.id,
@@ -70,7 +71,7 @@ function App() {
             "Content-type": "application/json; charset=UTF-8",
           },
         });
-        await fetch("http://localhost:3000/", {
+        await fetch(import.meta.env.VITE_SERVER_URI, {
           method: "POST",
           body: JSON.stringify({
             task: form.task,
@@ -93,7 +94,7 @@ function App() {
       return todo.id !== form.id;
     });
 
-    await fetch("http://localhost:3000/", {
+    await fetch(import.meta.env.VITE_SERVER_URI, {
       method: "DELETE",
       body: JSON.stringify({ id: form.id }),
       headers: {
@@ -112,7 +113,7 @@ function App() {
       task: "",
     });
 
-    await fetch("http://localhost:3000/", {
+    await fetch(import.meta.env.VITE_SERVER_URI, {
       method: "POST",
       body: JSON.stringify({
         task: form.task,
@@ -133,7 +134,7 @@ function App() {
     const newDeletedArray = todos.filter((todo) => todo.id === id);
 
     showToast("error", "Todo is deleted");
-    const newData = await fetch("http://localhost:3000/", {
+    const newData = await fetch(import.meta.env.VITE_SERVER_URI, {
       method: "DELETE",
       body: JSON.stringify({ id: newDeletedArray[0].id }),
       headers: {
@@ -157,7 +158,7 @@ function App() {
     });
     settodos(donetodo);
     const newDeletedArray = donetodo.filter((todo) => todo.id === completeid);
-    const markDonetodo = await fetch("http://localhost:3000/", {
+    const markDonetodo = await fetch(import.meta.env.VITE_SERVER_URI, {
       method: "PUT",
       body: JSON.stringify({
         id: completeid,

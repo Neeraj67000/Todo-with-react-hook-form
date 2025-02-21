@@ -4,7 +4,7 @@ import 'dotenv/config'
 import cors from "cors";
 
 
-const client = new MongoClient(process.env.LOCAL_URL);
+const client = new MongoClient(process.env.MONGO_LOCAL_URI);
 const dbName = 'myTodos';
 client.connect();
 const db = client.db(dbName);
@@ -41,4 +41,6 @@ app.put('/', async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
+    console.log(process.env.MONGO_LOCAL_URI);
+    
 })
