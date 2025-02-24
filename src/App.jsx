@@ -13,78 +13,84 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { ToastContainer, toast } from "react-toastify";
 import EditIcon from "@mui/icons-material/Edit";
-
-function App() {  
-  const [form, setform] = useState({
+import CircularProgress from "@mui/material/CircularProgress";
+import { ShowToast } from "./utl/Showtoast";
+function App() {
+  const [form, setForm] = useState({
     task: "",
     isCompleted: false,
   });
   const [todos, settodos] = useState([]);
+  const [loading, setloading] = useState(false);
 
   useEffect(() => {
+    setloading(true);
     async function fetchtTodos() {
-      const persistantTodos = await fetch(import.meta.env.VITE_SERVER_URI);
-      const newpersistantTodos = await persistantTodos.json();
-      settodos(newpersistantTodos);
+      try {
+        const persistantTodos = await fetch(import.meta.env.VITE_SERVER_URI);
+        const newPersistantTodos = await persistantTodos.json();
+        settodos(newPersistantTodos);
+      } catch (error) {
+        console.log("An error occured,", error.message);
+      }
     }
     fetchtTodos();
-    console.log(import.meta.env.VITE_SERVER_URI);
+    setloading(false);
   }, []);
 
   function handleForm(event) {
-    setform({
+    setForm({
       ...form,
       [event.target.name]: event.target.value,
     });
   }
-  function showToast(type, text) {
-    toast[type](text, {
-      position: "bottom-left",
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: false,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-      theme: "dark",
-    });
-  }
+
   async function handleKeyDown(event) {
     if (event.key === "Enter") {
       const editedTodo = todos.filter((todo) => {
         return todo.id !== form.id;
       });
-      const newtodo = { ...form, id: uuidv4() };
-      if (newtodo.task) {
-        const updatedtodos = [...editedTodo, newtodo];
-        settodos(updatedtodos);
-        setform({
+      const newTodo = { ...form, id: uuidv4() };
+      if (newTodo.task) {
+        const updatedTodos = [...editedTodo, newTodo];
+        settodos(updatedTodos);
+        setForm({
           ...form,
           task: "",
         });
-        await fetch(import.meta.env.VITE_SERVER_URI, {
-          method: "DELETE",
-          body: JSON.stringify({
-            id: form.id,
-          }),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
-        });
-        await fetch(import.meta.env.VITE_SERVER_URI, {
-          method: "POST",
-          body: JSON.stringify({
-            task: form.task,
-            isCompleted: form.isCompleted,
-            id: updatedtodos[updatedtodos.length - 1].id,
-          }),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
-        });
-        showToast("info", "Your todo is saved");
+
+        try {
+          await fetch(import.meta.env.VITE_SERVER_URI, {
+            method: "DELETE",
+            body: JSON.stringify({
+              id: form.id,
+            }),
+            headers: {
+              "Content-type": "application/json; charset=UTF-8",
+            },
+          });
+        } catch (error) {
+          console.log("An error occured,", error.message);
+        }
+
+        try {
+          await fetch(import.meta.env.VITE_SERVER_URI, {
+            method: "POST",
+            body: JSON.stringify({
+              task: form.task,
+              isCompleted: form.isCompleted,
+              id: updatedTodos[updatedTodos.length - 1].id,
+            }),
+            headers: {
+              "Content-type": "application/json; charset=UTF-8",
+            },
+          });
+        } catch (error) {
+          console.log("An error occured,", error.message);
+        }
+        ShowToast("info", "Your todo is saved");
       } else {
-        showToast("warn", "Please add some value");
+        ShowToast("warn", "Please add some value");
       }
     }
   }
@@ -93,86 +99,102 @@ function App() {
     const editedArray = todos.filter((todo) => {
       return todo.id !== form.id;
     });
-
-    await fetch(import.meta.env.VITE_SERVER_URI, {
-      method: "DELETE",
-      body: JSON.stringify({ id: form.id }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
-    const newtodo = { ...form, isCompleted: false, id: uuidv4() };
-    if (!newtodo.task) {
-      showToast("warn", "Please add some value");
+    try {
+      await fetch(import.meta.env.VITE_SERVER_URI, {
+        method: "DELETE",
+        body: JSON.stringify({ id: form.id }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      });
+    } catch (error) {
+      console.log("An error occured,", error.message);
+    }
+    const newTodo = { ...form, isCompleted: false, id: uuidv4() };
+    if (!newTodo.task) {
+      ShowToast("warn", "Please add some value");
       return;
     }
-    const updatedtodos = [...editedArray, newtodo];
-    settodos(updatedtodos);
-    setform({
+    const updatedTodos = [...editedArray, newTodo];
+    settodos(updatedTodos);
+    setForm({
       ...form,
       task: "",
     });
 
-    await fetch(import.meta.env.VITE_SERVER_URI, {
-      method: "POST",
-      body: JSON.stringify({
-        task: form.task,
-        isCompleted: form.isCompleted,
-        id: updatedtodos[updatedtodos.length - 1].id,
-      }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
-    showToast("info", "Your todo is saved");
+    try {
+      await fetch(import.meta.env.VITE_SERVER_URI, {
+        method: "POST",
+        body: JSON.stringify({
+          task: form.task,
+          isCompleted: form.isCompleted,
+          id: updatedTodos[updatedTodos.length - 1].id,
+        }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      });
+    } catch (error) {
+      console.log("An error occured,", error.message);
+    }
+    ShowToast("info", "Your todo is saved");
   }
 
   async function deleteTodo(id) {
-    const deletedarray = todos.filter((todo) => todo.id !== id);
-    settodos(deletedarray);
+    const deletedArray = todos.filter((todo) => todo.id !== id);
+    settodos(deletedArray);
 
     const newDeletedArray = todos.filter((todo) => todo.id === id);
 
-    showToast("error", "Todo is deleted");
-    const newData = await fetch(import.meta.env.VITE_SERVER_URI, {
-      method: "DELETE",
-      body: JSON.stringify({ id: newDeletedArray[0].id }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
-    const addData = await newData.json();
+    ShowToast("error", "Todo is deleted");
+
+    try {
+      await fetch(import.meta.env.VITE_SERVER_URI, {
+        method: "DELETE",
+        body: JSON.stringify({ id: newDeletedArray[0].id }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      });
+    } catch (error) {
+      console.log("An error occured,", error.message);
+    }
   }
   async function markAsDone(completeid) {
-    const donetodo = todos.map((todo) => {
+    const doneTodo = todos.map((todo) => {
       if (todo.id === completeid) {
         if (todo.isCompleted === false) {
           todo.isCompleted = true;
-          showToast("success", "Well Done");
+          ShowToast("success", "Well Done");
         } else {
           todo.isCompleted = false;
-          showToast("warn", "Something Left");
+          ShowToast("warn", "Something Left");
         }
       }
       return todo;
     });
-    settodos(donetodo);
-    const newDeletedArray = donetodo.filter((todo) => todo.id === completeid);
-    const markDonetodo = await fetch(import.meta.env.VITE_SERVER_URI, {
-      method: "PUT",
-      body: JSON.stringify({
-        id: completeid,
-        isCompleted: newDeletedArray[0].isCompleted,
-      }),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
+    settodos(doneTodo);
+    const newDeletedArray = doneTodo.filter((todo) => todo.id === completeid);
+
+    try {
+      await fetch(import.meta.env.VITE_SERVER_URI, {
+        method: "PUT",
+        body: JSON.stringify({
+          id: completeid,
+          isCompleted: newDeletedArray[0].isCompleted,
+        }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      });
+    } catch (error) {
+      console.log("An error occured,", error.message);
+    }
   }
 
   async function handleEdit(myid) {
     let editArray = todos.filter((todo) => todo.id === myid)[0];
-    setform({ ...form, task: editArray.task, id: editArray.id });
+    setForm({ ...form, task: editArray.task, id: editArray.id });
   }
 
   return (
@@ -223,7 +245,18 @@ function App() {
           alignItems: "center",
         }}
       >
-        {todos.length == 0 && (
+        {loading && (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              marginTop: "40px",
+            }}
+          >
+            <CircularProgress />
+          </Box>
+        )}
+        {todos.length == 0 && loading === false ? (
           <Box
             sx={(theme) => ({
               p: 1,
@@ -235,62 +268,63 @@ function App() {
               Please Add new tasks
             </Typography>
           </Box>
-        )}
-        {todos.length != 0 &&
-          todos.map((todo) => {
-            return (
-              <List
-                key={todo.id}
-                dense
-                sx={{
-                  width: "100%",
-                  maxWidth: "768px",
-                  bgcolor: "background.paper",
-                }}
-              >
-                <ListItem
-                  secondaryAction={
-                    <>
-                      <IconButton aria-label="delete" size="large">
-                        <EditIcon
-                          fontSize="inherit"
-                          onClick={() => handleEdit(todo.id)}
-                        />
-                      </IconButton>
-
-                      <Checkbox
-                        edge="end"
-                        onChange={() => markAsDone(todo.id, todo.isCompleted)}
-                        checked={todo.isCompleted ? "checked" : ""}
-                        inputProps=""
-                      />
-                      <IconButton aria-label="delete" size="large">
-                        <DeleteIcon
-                          fontSize="inherit"
-                          onClick={() => deleteTodo(todo.id)}
-                        />
-                      </IconButton>
-                    </>
-                  }
-                  disablePadding
+        ) : null}
+        {todos.length !== 0 && loading === false
+          ? todos.map((todo) => {
+              return (
+                <List
+                  key={todo.id}
+                  dense
+                  sx={{
+                    width: "100%",
+                    maxWidth: "768px",
+                    bgcolor: "background.paper",
+                  }}
                 >
-                  <ListItemButton>
-                    <Typography
-                      variant="h5"
-                      component="h2"
-                      style={{
-                        textDecoration: todo.isCompleted
-                          ? "line-through"
-                          : "none",
-                      }}
-                    >
-                      {todo.task}
-                    </Typography>
-                  </ListItemButton>
-                </ListItem>
-              </List>
-            );
-          })}
+                  <ListItem
+                    secondaryAction={
+                      <>
+                        <IconButton aria-label="delete" size="large">
+                          <EditIcon
+                            fontSize="inherit"
+                            onClick={() => handleEdit(todo.id)}
+                          />
+                        </IconButton>
+
+                        <Checkbox
+                          edge="end"
+                          onChange={() => markAsDone(todo.id, todo.isCompleted)}
+                          checked={todo.isCompleted ? "checked" : ""}
+                          inputProps=""
+                        />
+                        <IconButton aria-label="delete" size="large">
+                          <DeleteIcon
+                            fontSize="inherit"
+                            onClick={() => deleteTodo(todo.id)}
+                          />
+                        </IconButton>
+                      </>
+                    }
+                    disablePadding
+                  >
+                    <ListItemButton>
+                      <Typography
+                        variant="h5"
+                        component="h2"
+                        style={{
+                          textDecoration: todo.isCompleted
+                            ? "line-through"
+                            : "none",
+                        }}
+                      >
+                        {todo.task}
+                      </Typography>
+                    </ListItemButton>
+                  </ListItem>
+                </List>
+              );
+            })
+          : null}
       </Box>
     </>
   );
