@@ -24,18 +24,18 @@ function App() {
   const [loading, setloading] = useState(false);
 
   useEffect(() => {
-    setloading(true);
     async function fetchtTodos() {
       try {
         const persistantTodos = await fetch(import.meta.env.VITE_SERVER_URI);
+        setloading(true);
         const newPersistantTodos = await persistantTodos.json();
         settodos(newPersistantTodos);
+        setloading(false);
       } catch (error) {
         console.log("An error occured,", error.message);
       }
     }
     fetchtTodos();
-    setloading(false);
   }, []);
 
   function handleForm(event) {
