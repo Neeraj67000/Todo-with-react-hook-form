@@ -48,6 +48,7 @@ function App() {
      settodos(editedTodo);     
      try {
       await fetch(import.meta.env.VITE_SERVER_URI, {
+        mode: 'cors',
         method: "DELETE",
         body: form,
         headers: {
