@@ -12,14 +12,13 @@ const collection = db.collection('todos');
 
 const app = express()
 const port = 3000
+
 app.use(express.json());
-
-
-const corsOptions = {
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-};
-app.use(cors(corsOptions));
+app.use(cors({
+    origin: '*',  // Adjust for your frontend origin
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }));
 
 app.get('/', async (req, res) => {
     const findResult = await collection.find({}).toArray();
@@ -27,6 +26,7 @@ app.get('/', async (req, res) => {
 })
 app.post('/', async (req, res) => {
     res.json(req.body)
+    
     const insertResult = await collection.insertOne(req.body);
 })
 app.delete('/', async (req, res) => {
