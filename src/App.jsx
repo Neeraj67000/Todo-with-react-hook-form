@@ -44,20 +44,21 @@ function App() {
 
   async function saveTodo(task) {
     if (form) {
-     const editedTodo = todos.filter((todo)=>{ return todo.id !== form.id})
-     settodos(editedTodo);     
-     try {
-      await fetch(import.meta.env.VITE_SERVER_URI, {
-        mode: 'cors',
-        method: "DELETE",
-        body: form,
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
+      const editedTodo = todos.filter((todo) => {
+        return todo.id !== form.id;
       });
-    } catch (error) {
-      console.log("An error occured,", error.message);
-    }
+      settodos(editedTodo);
+      try {
+        await fetch(import.meta.env.VITE_SERVER_URI, {
+          method: "DELETE",
+          body: JSON.stringify({ id: form.id }),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        });
+      } catch (error) {
+        console.log("An error occured,", error.message);
+      }
     }
     setForm(task);
     const dataWithid = { ...task, isCompleted: false, id: uuidv4() };
@@ -85,7 +86,7 @@ function App() {
     ShowToast("error", "Todo is deleted");
 
     try {
-      await fetch(import.meta.env.VITE_SERVER_URI, {
+      await fetch(`${import.meta.env.VITE_SERVER_URI}${id}`, {
         method: "DELETE",
         body: JSON.stringify({ id: newDeletedArray[0].id }),
         headers: {
@@ -131,7 +132,25 @@ function App() {
   async function handleEdit(myid) {
     let editArray = todos.filter((todo) => todo.id === myid)[0];
     setValue("task", editArray.task);
-    setForm(editArray)
+    setForm(editArray);
+  }
+
+  async function handleDeleteSelected() {
+    const selectedTodos = todos.filter((todo) => {
+      return todo.isCompleted !== true;
+    });
+    settodos(selectedTodos);
+
+    try {
+      await fetch(import.meta.env.VITE_SERVER_URI, {
+        method: "DELETE",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      });
+    } catch (error) {
+      console.log("An error occured,", error.message);
+    }
   }
   return (
     <>
@@ -161,6 +180,7 @@ function App() {
         setValue={setValue}
         errors={errors}
         setForm={setForm}
+        handleDeleteSelected={handleDeleteSelected}
       />
       <Todolist
         loading={loading}

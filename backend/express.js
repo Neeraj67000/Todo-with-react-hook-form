@@ -14,7 +14,9 @@ const app = express()
 const port = 3000
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: '*'
+}));
 
 
 app.get('/', async (req, res) => {
@@ -22,16 +24,25 @@ app.get('/', async (req, res) => {
     res.json(findResult);
 })
 app.post('/', async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.json(req.body)
     const insertResult = await collection.insertOne(req.body);
 })
+app.delete('/:id', async (req, res) => {
+    const deleteId = req.params.id;
+    console.log(deleteId);
+    res.status(200).json({ message: `Resource with ID ${req.body.id} deleted successfully` });
+    await collection.deleteOne({ id: req.body.id });
+})
 app.delete('/', async (req, res) => {
     res.status(200).json({ message: `Resource with ID ${req.body.id} deleted successfully` });
-    const deleteResult = await collection.deleteOne({ id: req.body.id });
-
+    await collection.deleteMany({ isCompleted: true });
 })
 app.put('/', async (req, res) => {
     const updateResult = await collection.updateOne({ id: req.body.id }, { $set: { isCompleted: req.body.isCompleted } });
+    res.sendStatus(200);
 })
 
 app.listen(port, () => {
